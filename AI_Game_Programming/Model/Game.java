@@ -4,28 +4,19 @@ public class Game{
     public Game(){
         terrain = new ModeleAwale();
     }
-    public static Graine decomposerGraine(String couleurPart,Boolean asRed) {
-        switch (couleurPart) {
-            case "R":
-                return Graine.ROUGE;
-            case "B":
-                return Graine.BLEU;
-            case "TB":  //Transparent Bleu
-                return Graine.TRANSPARENT;
-            case "TR":  //Transparent Rouge
-                asRed = true;
-                return Graine.TRANSPARENT;
-            default:
-                throw new AssertionError();
-        }
-    }   
+
     public void jouerUnTour(){
         //ModeleAwale terrain = new ModeleAwale();
         terrain.afficherPlateau();
+        boolean isStarving = false;
+        if(terrain.getPossibleMoves().isEmpty()){
+            terrain.starving();
+            isStarving = true;
+        }
         Boolean asRed = null;
 
         Boolean move_is_true = false;
-        while(!move_is_true){
+        while(!move_is_true && !isStarving){
             
             Scanner sc = new Scanner(System.in);
             System.out.print("Mettez votre coup: ");
@@ -33,7 +24,25 @@ public class Game{
             String[] parts = line.split("\\s+");
             int numero_case = Integer.parseInt(parts[0]);
             String couleurPart = parts[1];
-            Graine gr = decomposerGraine(couleurPart, asRed);
+            Graine gr;
+            switch (couleurPart) {
+                case "R":
+                    gr = Graine.ROUGE;
+                    break;
+                case "B":
+                    gr = Graine.BLEU;
+                    break;
+                case "TB":
+                    asRed= false;//Transparent Bleu
+                    gr = Graine.TRANSPARENT;
+                    break;
+                case "TR":  //Transparent Rouge
+                    asRed = true;
+                    gr = Graine.TRANSPARENT;
+                    break;
+                default:
+                    throw new AssertionError();
+            }
 
             move_is_true = terrain.deplacerGraine(gr,numero_case -1 ,asRed);
 
@@ -41,9 +50,14 @@ public class Game{
         
 
         if(terrain.isJeuTermine()){
-            Joueur gagnant = terrain.getGagnant();
-            int score = terrain.getScore(gagnant);
-            System.out.println("Jeu est termine. Le gagnant : " + gagnant + " | Score: " + score);
+            if(terrain.getDraw()){
+                System.out.println("Le jeu est termine. Egualité");
+            }
+            else{
+                Joueur gagnant = terrain.getGagnant();
+                int score = terrain.getScore(gagnant);
+                System.out.println("Jeu est termine. Le gagnant : " + gagnant + " | Score: " + score);
+            }
         }
         else{
             terrain.changeJoueur();

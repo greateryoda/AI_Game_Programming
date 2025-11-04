@@ -4,19 +4,19 @@ public class ModeleAwale{
     private List<Graine>[] plateau;
     Joueur joueurActif;
     private boolean jeuTermine;
+    private boolean draw;
     private Joueur gagnant;
-    private List<Graine> capturesJoueur1;   //graines captures par le 1er joueur
-    private List<Graine> capturesJoueur2;   //graines captures par le 2eme joueur
-
-    @SuppressWarnings("unchecked")
+    int scoreJoueur1;
+    int scoreJoueur2;
     public ModeleAwale() {
         //plateau = new ArrayList[TAILLE_PLATEAU];
         plateau = (ArrayList<Graine>[]) new ArrayList<?>[TAILLE_PLATEAU];
         joueurActif = Joueur.Joueur_1;
         jeuTermine = false;
         gagnant = null;
-        capturesJoueur1 = new ArrayList<>();
-        capturesJoueur2 = new ArrayList<>();
+        draw = false;
+        scoreJoueur1 = 0;
+        scoreJoueur2 = 0;
         initialiserPlateau();
     }
 
@@ -39,12 +39,23 @@ public class ModeleAwale{
         joueurActif = joueurActif.opposite();
     }
 
+    public boolean getDraw(){
+        return draw;
+    }
+
     public boolean isJeuTermine() {
         return jeuTermine;
     }
 
     public Joueur getGagnant() {
         return gagnant;
+    }
+
+    public Joueur computeGagnant(){
+        if(scoreJoueur2>scoreJoueur1){
+            return Joueur.Joueur_2;
+        }
+        else return Joueur.Joueur_1;
     }
 
     public int compterGraineCase(int numero_case, Graine gr){
@@ -61,25 +72,74 @@ public class ModeleAwale{
 
     public int getScore(Joueur j) {
         if (j == Joueur.Joueur_1)
-            return capturesJoueur1.size();
+            return scoreJoueur1;
         else
-            return capturesJoueur2.size();
+            return scoreJoueur2;
     }
 
+    public int compterGrainesRestante(){
+        int cpt = 0;
+        for(int i=0;i<TAILLE_PLATEAU;i++){
+            cpt += compterTousGraines(i);
+        }
+        return cpt;
+    }
+
+    public void starving(){
+        switch(joueurActif){
+            case Joueur.Joueur_1:
+                scoreJoueur2 += compterGrainesRestante();
+                if(getScore(Joueur.Joueur_1)==40 && getScore(Joueur.Joueur_2)==40){
+                    jeuTermine = true;
+                    draw = true;
+                }
+                else{
+                    jeuTermine = true;
+                    gagnant = computeGagnant();
+                }
+                break;
+            case Joueur.Joueur_2:
+                scoreJoueur1 += compterGrainesRestante();
+                if(getScore(Joueur.Joueur_1)==40 && getScore(Joueur.Joueur_2)==40){
+                    jeuTermine = true;
+                    draw = true;
+                }
+                else{
+                    jeuTermine = true;
+                    gagnant = computeGagnant();
+                }
+                break;
+        }
+    }
 
     public List<Move> getPossibleMoves() {
         List<Move> moves = new ArrayList<>();
+        if(joueurActif == Joueur.Joueur_1){
+            for (int i = 1; i < 16; i+=2) {
 
-        for (int i = 0; i < 16; i++) {
-            //if (!isCaseValide(i)) continue;
+                for (Graine g : Graine.values()) {
+                    if (compterGraineCase(i, g) > 0) {
+                        if (g == Graine.TRANSPARENT) {
+                            moves.add(new Move(i, g, true, joueurActif));
+                            moves.add(new Move(i, g, false, joueurActif));
+                        } else {
+                            moves.add(new Move(i, g, null, joueurActif));
+                        }
+                    }
+                }
+            }
+        }
+        if(joueurActif == Joueur.Joueur_2){
+            for (int i = 0; i < 16; i+=2) {
 
-            for (Graine g : Graine.values()) {
-                if (compterGraineCase(i, g) > 0) {
-                    if (g == Graine.TRANSPARENT) {
-                        moves.add(new Move(i, g, true, joueurActif));
-                        moves.add(new Move(i, g, false, joueurActif));
-                    } else {
-                        moves.add(new Move(i, g, null, joueurActif));
+                for (Graine g : Graine.values()) {
+                    if (compterGraineCase(i, g) > 0) {
+                        if (g == Graine.TRANSPARENT) {
+                            moves.add(new Move(i, g, true, joueurActif));
+                            moves.add(new Move(i, g, false, joueurActif));
+                        } else {
+                            moves.add(new Move(i, g, null, joueurActif));
+                        }
                     }
                 }
             }
@@ -102,7 +162,7 @@ public class ModeleAwale{
 
 
     public boolean  deplacerGraine(Graine gr,int numero_case,Boolean asRed){
-
+    System.out.println(gr);System.out.println(asRed);
     if (!isCaseDuJoueur(numero_case, joueurActif)) {
         System.out.println("Ce case ne t'appartient pas");
         return false;
@@ -150,8 +210,8 @@ public class ModeleAwale{
                         plateau[i].add(Graine.TRANSPARENT);
                         quantite_graine--;
                     }
-                    
-                    deplacerGraine(Graine.ROUGE, numero_case, null);
+                    if(compterGraineCase(numero_case,Graine.ROUGE)>0)
+                        deplacerGraine(Graine.ROUGE, numero_case, null);
                 } else {
                     
                     while (quantite_graine > 0) {
@@ -164,8 +224,8 @@ public class ModeleAwale{
                             quantite_graine--;
                         }
                     }
-                    
-                    deplacerGraine(Graine.BLEU, numero_case, null);
+                    if(compterGraineCase(numero_case,Graine.BLEU)>0)
+                        deplacerGraine(Graine.BLEU, numero_case, null);
                 }
             }
         }
@@ -178,15 +238,23 @@ public class ModeleAwale{
         while(compterTousGraines(numero_case) == 2 || compterTousGraines(numero_case) == 3){
             if (plateau[numero_case].isEmpty()) break;
             if (joueurActif == Joueur.Joueur_1)
-                capturesJoueur1.addAll(plateau[numero_case]);
+                scoreJoueur1 += plateau[numero_case].size();
             else
-                capturesJoueur2.addAll(plateau[numero_case]);
+                scoreJoueur2 += plateau[numero_case].size();
             plateau[numero_case].clear();
             numero_case = (numero_case - 1 + 16) % 16;
         }
         if (getScore(joueurActif) >= 49) {
             jeuTermine = true;
             gagnant = joueurActif;
+        }
+        if(getScore(Joueur.Joueur_1)==40 && getScore(Joueur.Joueur_2)==40){
+            jeuTermine = true;
+            draw = true;
+        }
+        if(compterGrainesRestante()<10){
+            jeuTermine = true;
+            gagnant = computeGagnant();
         }
     }
 
