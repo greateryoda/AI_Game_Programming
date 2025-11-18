@@ -2,7 +2,7 @@ import java.util.*;
 public class ModeleAwale{
     int TAILLE_PLATEAU = 16;
     private List<Graine>[] plateau;
-    Joueur joueurActif;
+    private Joueur joueurActif;
     private boolean jeuTermine;
     private boolean draw;
     private Joueur gagnant;
@@ -20,6 +20,14 @@ public class ModeleAwale{
         initialiserPlateau();
     }
 
+    public List<Graine>[] getPlateauCopie(){
+        List<Graine>[] copie = new List[TAILLE_PLATEAU];
+        for (int i = 0; i < TAILLE_PLATEAU; i++){
+            copie[i] = plateau[i];
+        }
+        return copie;
+    }
+
     private void initialiserPlateau() {
         for(int i = 0; i< TAILLE_PLATEAU; i++){
             plateau[i] = new ArrayList<>();
@@ -30,6 +38,8 @@ public class ModeleAwale{
             }
         }
     }
+
+
 
     public Joueur getJoueurActif() {
         return joueurActif;

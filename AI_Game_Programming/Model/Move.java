@@ -15,4 +15,5 @@ public class Move{
     public Graine getGraine() { return graine; }
     public Boolean getAsRed() { return asRed; }
     public Joueur getJoueur() { return joueur; }
+
 }
