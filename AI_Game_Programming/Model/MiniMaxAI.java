@@ -38,7 +38,7 @@ public class MiniMaxAI {
             Eval res = (joueurIA == Joueur.Joueur_1)
                     ? minValue(state.ApplyMove(move),profondeurMax-1)
                     : maxValue(state.ApplyMove(move),profondeurMax-1);
-            if ((joueurIA == Joueur.Joueur_1 && res.value > meilleurScore) || (joueurIA == Joueur.Joueur_2 && res.value < meilleurProfondeur)) {
+            if ((joueurIA == Joueur.Joueur_1 && res.value > meilleurScore) || (joueurIA == Joueur.Joueur_2 && res.value < meilleurScore)) {
                 meilleurScore = res.value;
                 meilleurProfondeur = res.depth;
                 bestMoves.clear();
@@ -57,6 +57,7 @@ public class MiniMaxAI {
         }
 
         Random random = new Random();
+        System.out.println("taille bestMoves :" + bestMoves.size());
         int nombre_alea = random.nextInt(bestMoves.size());
 
         meilleurCoup = bestMoves.get(nombre_alea);
@@ -66,14 +67,47 @@ public class MiniMaxAI {
     }
 
     public Eval minValue(GameState etat,int profondeur){
-        if(profondeur==0){
-            //return new Eval()
+        if(profondeur==0 || etat.estTerminal()){
+            return new Eval(etat.evaluate(), profondeur);
+        }
+        int v = max;
+        int bestDepth = 0;
+        List<Move> coups = etat.getPossibleMoves();
+        if (coups.isEmpty()){
+            System.out.println("profondeur :"+profondeur);
+            etat.afficherPlateau();
+            GameState starving = etat.starving();
+            return new Eval(starving.evaluate(), profondeur);
+        }
+        for(Move coup : coups){
+            Eval res = maxValue(etat.ApplyMove(coup),profondeur--);
+            if(res.value < v){
+                v = res.value;
+                bestDepth = res.depth;
+            }
+        }
+        return new Eval(v, bestDepth);
+    }
+
+    public Eval maxValue(GameState etat,int profondeur){
+        if(profondeur==0 || etat.estTerminal()){
+            return new Eval(etat.evaluate(), profondeur);
         }
         int v = min;
         int bestDepth = 0;
         List<Move> coups = etat.getPossibleMoves();
-    }
-    public Eval maxValue(GameState etat,int profondeur){
-        return new Eval(max, profondeurMax);
+        if (coups.isEmpty()){
+            GameState starving = etat.starving();
+            return new Eval(starving.evaluate(), profondeur);
+        }
+        for(Move coup : coups){
+            Eval res = minValue(etat.ApplyMove(coup),profondeur--);
+            if(res.value > v){
+                v = res.value;
+                bestDepth = res.depth;
+            }
+        }
+        return new Eval(v, bestDepth);
     }
 }
+

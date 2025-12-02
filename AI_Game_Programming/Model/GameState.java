@@ -9,8 +9,20 @@ public class GameState {
     private int scoreJ2;
 
     public GameState(ModeleAwale model) {
-        this.plateau = model.getPlateauCopie();
+        plateau = new List[model.plateau.length];
+        for(int i=0;i<model.plateau.length;i++){
+            if(model.plateau[i]!=null){
+                plateau[i] = new ArrayList<>(model.plateau[i]);
+            }
+        }
         this.joueurActif = model.getJoueurActif();
+    }
+
+    public GameState(){
+        this.plateau = new ArrayList[16];
+        for(int i = 0; i < plateau.length; i++){
+            plateau[i] = new ArrayList<>();
+        }
     }
 
     public GameState(GameState gameState) {
@@ -18,9 +30,34 @@ public class GameState {
         this.joueurActif = gameState.joueurActif;
     }
 
+    public int compterGrainesRestante(){
+        int cpt = 0;
+        for(int i=0;i< plateau.length;i++){
+            cpt += compterTousGraines(i);
+        }
+        return cpt;
+    }
+
+    public int getScore(){
+        return (joueurActif == Joueur.Joueur_1 ? scoreJ1 : scoreJ2);
+    }
+
+    public boolean estTerminal(){
+        if (getScore() >= 49) {
+            return true;
+        }
+        if(scoreJ1==40 && scoreJ2==40){
+            return true;
+        }
+        if(compterGrainesRestante()<10){
+            return true;
+        }
+        return false;
+    }
+
     public List<Move> getPossibleMoves() {
         List<Move> moves = new ArrayList<>();
-        if(joueurActif == Joueur.Joueur_1){
+        if(joueurActif == Joueur.Joueur_2){
             for (int i = 1; i < 16; i+=2) {
 
                 for (Graine g : Graine.values()) {
@@ -29,13 +66,13 @@ public class GameState {
                             moves.add(new Move(i, g, true, joueurActif));
                             moves.add(new Move(i, g, false, joueurActif));
                         } else {
-                            moves.add(new Move(i, g, null, joueurActif));
+                            moves.add(new Move(i, g, false, joueurActif));
                         }
                     }
                 }
             }
         }
-        if(joueurActif == Joueur.Joueur_2){
+        if(joueurActif == Joueur.Joueur_1){
             for (int i = 0; i < 16; i+=2) {
 
                 for (Graine g : Graine.values()) {
@@ -44,7 +81,7 @@ public class GameState {
                             moves.add(new Move(i, g, true, joueurActif));
                             moves.add(new Move(i, g, false, joueurActif));
                         } else {
-                            moves.add(new Move(i, g, null, joueurActif));
+                            moves.add(new Move(i, g, false, joueurActif));
                         }
                     }
                 }
@@ -65,8 +102,25 @@ public class GameState {
         return plateau[i].size();
     }
 
+    public GameState starving(){
+        System.out.println("starving!!!!!!");
+        GameState copie = new GameState();
+        switch(joueurActif){
+            case Joueur.Joueur_1:
+                copie.scoreJ2 = this.scoreJ2+compterGrainesRestante();
+                copie.scoreJ1 = this.scoreJ1;
+                break;
+            case Joueur.Joueur_2:
+                copie.scoreJ1 = this.scoreJ1+compterGrainesRestante();
+                copie.scoreJ2 = this.scoreJ2;
+                break;
+        }
+        copie.joueurActif = (joueurActif == Joueur.Joueur_1 ? Joueur.Joueur_2 : Joueur.Joueur_1);
+        return copie;
+    }
+
     public GameState ApplyMove(Move move) {
-        if(move.graine != Graine.TRANSPARENT) move.asRed = null;
+        if(move.graine != Graine.TRANSPARENT) move.asRed = false;
         GameState copie = new GameState(this);
         copie.plateau[move.numero_case].removeAll(Collections.singleton(move.graine));
         int i = move.numero_case;
@@ -129,5 +183,37 @@ public class GameState {
         copie.joueurActif = (copie.joueurActif == Joueur.Joueur_1 ? Joueur.Joueur_2 : Joueur.Joueur_1);
         return copie;
     }
-    //eval()
+
+    public int evaluate(){
+        return (joueurActif == Joueur.Joueur_1 ? scoreJ1 : scoreJ2);
+    }
+
+
+    private String afficherCase(int i) {
+        StringBuilder sb = new StringBuilder("(");
+        for (Graine g : plateau[i]) {
+            if (g == Graine.ROUGE) sb.append("R");
+            else if (g == Graine.BLEU) sb.append("B");
+            else sb.append("T");
+        }
+        sb.append(")");
+        return sb.toString();
+    }
+
+    public void afficherPlateau() {
+        System.out.println("╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗");
+        // Üst sıra (1 → 8)
+        for (int i = 0; i < 8; i++) {
+            System.out.printf("%2d: %-10s ", (i + 1), afficherCase(i));
+        }
+        System.out.println();
+
+        // Alt sıra (16 → 9) tersten
+        for (int i = 15; i >= 8; i--) {
+            System.out.printf("%2d: %-10s ", (i + 1), afficherCase(i));
+        }
+        System.out.println("\n");
+        System.out.println("╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝");
+    }
+
 }

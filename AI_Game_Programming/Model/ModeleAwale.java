@@ -1,7 +1,7 @@
 import java.util.*;
 public class ModeleAwale{
     int TAILLE_PLATEAU = 16;
-    private List<Graine>[] plateau;
+    public List<Graine>[] plateau;
     private Joueur joueurActif;
     private boolean jeuTermine;
     private boolean draw;
@@ -172,7 +172,7 @@ public class ModeleAwale{
 
 
     public boolean  deplacerGraine(Graine gr,int numero_case,Boolean asRed){
-    System.out.println(gr);System.out.println(asRed);
+    System.out.println(gr);System.out.println(asRed);System.out.println(numero_case);
     if (!isCaseDuJoueur(numero_case, joueurActif)) {
         System.out.println("Ce case ne t'appartient pas");
         return false;

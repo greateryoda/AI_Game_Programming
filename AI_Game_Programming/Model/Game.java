@@ -1,8 +1,10 @@
 import java.util.*;
 public class Game{
     ModeleAwale terrain;
+    MiniMaxAI ai;
     public Game(){
         terrain = new ModeleAwale();
+        ai = new MiniMaxAI(Joueur.Joueur_2,2);
     }
 
     public void jouerUnTour(){
@@ -45,6 +47,9 @@ public class Game{
             }
 
             move_is_true = terrain.deplacerGraine(gr,numero_case -1 ,asRed);
+            terrain.changeJoueur();
+            terrain.afficherPlateau();
+
 
         }
         
@@ -60,7 +65,23 @@ public class Game{
             }
         }
         else{
+            if(terrain.getPossibleMoves().isEmpty()){
+                terrain.starving();
+                isStarving = true;
+            }
+            Move aiMove = ai.choisirCoup(terrain);
+            terrain.deplacerGraine(aiMove.getGraine(),aiMove.getNumeroCase(),aiMove.getAsRed());
             terrain.changeJoueur();
+            if(terrain.isJeuTermine()){
+                if(terrain.getDraw()){
+                    System.out.println("Le jeu est termine. Egualité");
+                }
+                else{
+                    Joueur gagnant = terrain.getGagnant();
+                    int score = terrain.getScore(gagnant);
+                    System.out.println("Jeu est termine. Le gagnant : " + gagnant + " | Score: " + score);
+                }
+            }
         }
     }
     public void jouerUnePartie(){
