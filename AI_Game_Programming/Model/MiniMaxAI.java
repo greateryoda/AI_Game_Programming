@@ -36,8 +36,8 @@ public class MiniMaxAI {
 
         for(Move move : possibleMove){
             Eval res = (joueurIA == Joueur.Joueur_1)
-                    ? minValue(state.ApplyMove(move),profondeurMax-1)
-                    : maxValue(state.ApplyMove(move),profondeurMax-1);
+                    ? minValue(state.ApplyMove(move),profondeurMax-1,min,max)
+                    : maxValue(state.ApplyMove(move),profondeurMax-1,min,max);
             if ((joueurIA == Joueur.Joueur_1 && res.value > meilleurScore) || (joueurIA == Joueur.Joueur_2 && res.value < meilleurScore)) {
                 meilleurScore = res.value;
                 meilleurProfondeur = res.depth;
@@ -66,7 +66,7 @@ public class MiniMaxAI {
 
     }
 
-    public Eval minValue(GameState etat,int profondeur){
+    public Eval minValue(GameState etat,int profondeur,int alpha, int beta){
         if(profondeur==0 || etat.estTerminal()){
             return new Eval(etat.evaluate(), profondeur);
         }
@@ -80,16 +80,20 @@ public class MiniMaxAI {
             return new Eval(starving.evaluate(), profondeur);
         }
         for(Move coup : coups){
-            Eval res = maxValue(etat.ApplyMove(coup),profondeur--);
+            Eval res = maxValue(etat.ApplyMove(coup),profondeur-1,alpha,beta);
             if(res.value < v){
                 v = res.value;
                 bestDepth = res.depth;
             }
+            if(v <=alpha){
+                return new Eval(v, bestDepth);
+            }
+            beta = Math.min(beta,v);
         }
         return new Eval(v, bestDepth);
     }
 
-    public Eval maxValue(GameState etat,int profondeur){
+    public Eval maxValue(GameState etat,int profondeur,int alpha,int beta){
         if(profondeur==0 || etat.estTerminal()){
             return new Eval(etat.evaluate(), profondeur);
         }
@@ -101,11 +105,15 @@ public class MiniMaxAI {
             return new Eval(starving.evaluate(), profondeur);
         }
         for(Move coup : coups){
-            Eval res = minValue(etat.ApplyMove(coup),profondeur--);
+            Eval res = minValue(etat.ApplyMove(coup),profondeur-1,alpha,beta);
             if(res.value > v){
                 v = res.value;
                 bestDepth = res.depth;
             }
+            if(v >=beta){
+                return new Eval(v, bestDepth);
+            }
+            alpha = Math.min(alpha,v);
         }
         return new Eval(v, bestDepth);
     }

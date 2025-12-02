@@ -4,7 +4,7 @@ public class Game{
     MiniMaxAI ai;
     public Game(){
         terrain = new ModeleAwale();
-        ai = new MiniMaxAI(Joueur.Joueur_2,2);
+        ai = new MiniMaxAI(Joueur.Joueur_2,5);
     }
 
     public void jouerUnTour(){

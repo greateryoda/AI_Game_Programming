@@ -26,8 +26,15 @@ public class GameState {
     }
 
     public GameState(GameState gameState) {
-        this.plateau = gameState.plateau;
+        plateau = new List[gameState.plateau.length];
+        for(int i=0;i<gameState.plateau.length;i++){
+            if(gameState.plateau[i]!=null){
+                plateau[i] = new ArrayList<>(gameState.plateau[i]);
+            }
+        }
         this.joueurActif = gameState.joueurActif;
+        this.scoreJ1 = gameState.scoreJ1;
+        this.scoreJ2 = gameState.scoreJ2;
     }
 
     public int compterGrainesRestante(){
@@ -106,11 +113,11 @@ public class GameState {
         System.out.println("starving!!!!!!");
         GameState copie = new GameState();
         switch(joueurActif){
-            case Joueur.Joueur_1:
+            case Joueur_1:
                 copie.scoreJ2 = this.scoreJ2+compterGrainesRestante();
                 copie.scoreJ1 = this.scoreJ1;
                 break;
-            case Joueur.Joueur_2:
+            case Joueur_2:
                 copie.scoreJ1 = this.scoreJ1+compterGrainesRestante();
                 copie.scoreJ2 = this.scoreJ2;
                 break;
