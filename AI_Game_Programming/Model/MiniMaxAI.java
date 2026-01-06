@@ -15,12 +15,21 @@ class Eval{
 public class MiniMaxAI {
     private int max = Integer.MAX_VALUE;
     private int min = Integer.MIN_VALUE;
-    private Joueur joueurIA;
+    public Joueur joueurIA;
     private int profondeurMax;
+    private boolean solutionFound;
+    private boolean useNewEval = false;
 
-    public MiniMaxAI(Joueur joueurIA,int profondeurMax) {
+    public MiniMaxAI(Joueur joueurIA,int profondeurMax,boolean useNewEval){
+        this.joueurIA = joueurIA;
         this.joueurIA = joueurIA;
         this.profondeurMax = Math.max(1,profondeurMax);
+        this.solutionFound = false;
+        this.useNewEval = useNewEval;
+    }
+
+    public void setJoueurIA(Joueur joueurIA){
+        this.joueurIA = joueurIA;
     }
 
     public Move choisirCoup(ModeleAwale gameState){
@@ -57,10 +66,10 @@ public class MiniMaxAI {
         }
 
         Random random = new Random();
-        System.out.println("taille bestMoves :" + bestMoves.size());
         int nombre_alea = random.nextInt(bestMoves.size());
 
         meilleurCoup = bestMoves.get(nombre_alea);
+
 
         return meilleurCoup;
 
@@ -68,16 +77,15 @@ public class MiniMaxAI {
 
     public Eval minValue(GameState etat,int profondeur,int alpha, int beta){
         if(profondeur==0 || etat.estTerminal()){
-            return new Eval(etat.evaluate(), profondeur);
+            return new Eval(etat.evaluate(useNewEval), profondeur);
         }
         int v = max;
         int bestDepth = 0;
         List<Move> coups = etat.getPossibleMoves();
         if (coups.isEmpty()){
             System.out.println("profondeur :"+profondeur);
-            etat.afficherPlateau();
             GameState starving = etat.starving();
-            return new Eval(starving.evaluate(), profondeur);
+            return new Eval(starving.evaluate(useNewEval), profondeur);
         }
         for(Move coup : coups){
             Eval res = maxValue(etat.ApplyMove(coup),profondeur-1,alpha,beta);
@@ -95,14 +103,14 @@ public class MiniMaxAI {
 
     public Eval maxValue(GameState etat,int profondeur,int alpha,int beta){
         if(profondeur==0 || etat.estTerminal()){
-            return new Eval(etat.evaluate(), profondeur);
+            return new Eval(etat.evaluate(useNewEval), profondeur);
         }
         int v = min;
         int bestDepth = 0;
         List<Move> coups = etat.getPossibleMoves();
         if (coups.isEmpty()){
             GameState starving = etat.starving();
-            return new Eval(starving.evaluate(), profondeur);
+            return new Eval(starving.evaluate(useNewEval), profondeur);
         }
         for(Move coup : coups){
             Eval res = minValue(etat.ApplyMove(coup),profondeur-1,alpha,beta);

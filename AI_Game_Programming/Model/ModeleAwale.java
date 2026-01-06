@@ -172,7 +172,6 @@ public class ModeleAwale{
 
 
     public boolean  deplacerGraine(Graine gr,int numero_case,Boolean asRed){
-    System.out.println(gr);System.out.println(asRed);System.out.println(numero_case);
     if (!isCaseDuJoueur(numero_case, joueurActif)) {
         System.out.println("Ce case ne t'appartient pas");
         return false;
@@ -278,6 +277,34 @@ public class ModeleAwale{
         }
         sb.append(")");
         return sb.toString();
+    }
+
+    public void deplacerGraineFromInput(String val){
+        String[] parts = val.split("\\s+");
+        int numero_case = Integer.parseInt(parts[0]) - 1;
+        String couleurPart = parts[1];
+        Graine gr;
+        Boolean asRed = null;
+        switch (couleurPart) {
+            case "R":
+                gr = Graine.ROUGE;
+                break;
+            case "B":
+                gr = Graine.BLEU;
+                break;
+            case "TB":
+                asRed= false;//Transparent Bleu
+                gr = Graine.TRANSPARENT;
+                break;
+            case "TR":  //Transparent Rouge
+                asRed = true;
+                gr = Graine.TRANSPARENT;
+                break;
+            default:
+                throw new AssertionError();
+        }
+
+        deplacerGraine(gr,numero_case ,asRed);
     }
 
 

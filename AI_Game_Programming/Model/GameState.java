@@ -110,7 +110,6 @@ public class GameState {
     }
 
     public GameState starving(){
-        System.out.println("starving!!!!!!");
         GameState copie = new GameState();
         switch(joueurActif){
             case Joueur_1:
@@ -191,7 +190,70 @@ public class GameState {
         return copie;
     }
 
-    public int evaluate(){
+    public int countMovesForPlayer(Joueur player){
+        List<Move> moves = getPossibleMoves();
+        int count = 0;
+        if(moves == null) return 0;
+        for(Move m : moves){
+            if(m == null) continue;
+            if(m.joueur == player){
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public int compterCreuxVulnerables(Joueur player){
+        int count = 0;
+        if(player == Joueur.Joueur_1){
+            for(int i=0;i<16;i+=2){
+                if(compterTousGraines(i)==0){
+                    int adversaryIndex = (i - 1 + 16) % 16;
+                    if(compterTousGraines(adversaryIndex)==2 || compterTousGraines(adversaryIndex)==3){
+                        count++;
+                    }
+                }
+            }
+        }
+        else{
+            for(int i=1;i<16;i+=2){
+                if(compterTousGraines(i)==0){
+                    int adversaryIndex = (i - 1 + 16) % 16;
+                    if(compterTousGraines(adversaryIndex)==2 || compterTousGraines(adversaryIndex)==3){
+                        count++;
+                    }
+                }
+            }
+        }
+        return count;
+
+    }
+
+    public int evaluate_v2(){
+        int score_courant, score_diff;
+        if(joueurActif == Joueur.Joueur_1){
+            score_courant = scoreJ1;
+            int score_adversaire = scoreJ2;
+            score_diff = score_courant - score_adversaire;
+        }
+        else{
+            score_courant = scoreJ2;
+            int score_adversaire = scoreJ1;
+            score_diff = score_courant - score_adversaire;
+        }
+
+
+
+        int gain_coups = countMovesForPlayer(joueurActif) * 10;
+        int case_vulnerables = compterCreuxVulnerables(joueurActif.opposite());
+
+        return 100*score_diff + gain_coups + 15*case_vulnerables;
+    }
+
+    public int evaluate(boolean v2){
+        if(v2){
+            return evaluate_v2();
+        }
         return (joueurActif == Joueur.Joueur_1 ? scoreJ1 : scoreJ2);
     }
 
