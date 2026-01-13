@@ -6,7 +6,7 @@ public class Arbitre {
 
     public static void main(String[] args) throws Exception {
         //Process A = Runtime.getRuntime().exec("C:\\Users\\mleve\\Desktop\\Cours\\2025\\2026\\AI_Game_Programming\\AI_Game_Programming\\external_player.exe JoueurA");
-        Process A = Runtime.getRuntime().exec("java -cp C:\\Users\\mleve\\Desktop\\Cours\\2025\\2026\\AI_Game_Programming\\AI_Game_Programming\\bin principale JoueurA");
+        Process A = Runtime.getRuntime().exec("java -jar C:\\Users\\mleve\\Desktop\\Cours\\2025\\2026\\AI_Game_Programming\\AI_Game_Programming\\external_player.jar JoueurA");
         //        Process A = new ProcessBuilder("./A").start();
         // Pour lancer un code java COMPILE : voir https://www.baeldung.com/java-process-api
         // process = Runtime.getRuntime().exec("java -cp src/main/java com.baeldung.java9.process.OutputStreamExample");
