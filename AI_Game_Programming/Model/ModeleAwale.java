@@ -1,8 +1,8 @@
 import java.util.*;
 public class ModeleAwale{
     int TAILLE_PLATEAU = 16;
-    private List<Graine>[] plateau;
-    Joueur joueurActif;
+    public List<Graine>[] plateau;
+    private Joueur joueurActif;
     private boolean jeuTermine;
     private boolean draw;
     private Joueur gagnant;
@@ -20,6 +20,14 @@ public class ModeleAwale{
         initialiserPlateau();
     }
 
+    public List<Graine>[] getPlateauCopie(){
+        List<Graine>[] copie = new List[TAILLE_PLATEAU];
+        for (int i = 0; i < TAILLE_PLATEAU; i++){
+            copie[i] = plateau[i];
+        }
+        return copie;
+    }
+
     private void initialiserPlateau() {
         for(int i = 0; i< TAILLE_PLATEAU; i++){
             plateau[i] = new ArrayList<>();
@@ -30,6 +38,8 @@ public class ModeleAwale{
             }
         }
     }
+
+
 
     public Joueur getJoueurActif() {
         return joueurActif;
@@ -66,6 +76,12 @@ public class ModeleAwale{
         return count;
     }
 
+    public void viderPlateau(){
+        for(int i = 0; i< TAILLE_PLATEAU; i++){
+            plateau[i].clear();
+        }
+    }
+
     public int compterTousGraines(int numero_case) {
         return plateau[numero_case].size();
     }
@@ -89,6 +105,7 @@ public class ModeleAwale{
         switch(joueurActif){
             case Joueur.Joueur_1:
                 scoreJoueur2 += compterGrainesRestante();
+                viderPlateau();
                 if(getScore(Joueur.Joueur_1)==40 && getScore(Joueur.Joueur_2)==40){
                     jeuTermine = true;
                     draw = true;
@@ -100,6 +117,7 @@ public class ModeleAwale{
                 break;
             case Joueur.Joueur_2:
                 scoreJoueur1 += compterGrainesRestante();
+                viderPlateau();
                 if(getScore(Joueur.Joueur_1)==40 && getScore(Joueur.Joueur_2)==40){
                     jeuTermine = true;
                     draw = true;
@@ -162,13 +180,10 @@ public class ModeleAwale{
 
 
     public boolean  deplacerGraine(Graine gr,int numero_case,Boolean asRed){
-    System.out.println(gr);System.out.println(asRed);
     if (!isCaseDuJoueur(numero_case, joueurActif)) {
-        System.out.println("Ce case ne t'appartient pas");
         return false;
     }
     if (!hasSeedsOfColor(numero_case, gr)) {
-        System.out.println("Il n'y a aucune graine dans ce cas");
         return false;
     }
        
@@ -254,6 +269,7 @@ public class ModeleAwale{
         }
         if(compterGrainesRestante()<10){
             jeuTermine = true;
+            
             gagnant = computeGagnant();
         }
     }
@@ -268,6 +284,39 @@ public class ModeleAwale{
         }
         sb.append(")");
         return sb.toString();
+    }
+
+    public void deplacerGraineFromInput(String val){
+        String val_trimmed = val.trim();
+        int i = 0;
+        while (i < val_trimmed.length() && Character.isDigit(val_trimmed.charAt(i))) {
+            i++;
+        }
+        
+        int numero_case = Integer.parseInt(val_trimmed.substring(0, i)) - 1;
+        String couleurPart = val_trimmed.substring(i).trim();
+        Graine gr;
+        Boolean asRed = null;
+        switch (couleurPart) {
+            case "R":
+                gr = Graine.ROUGE;
+                break;
+            case "B":
+                gr = Graine.BLEU;
+                break;
+            case "TB":
+                asRed= false;//Transparent Bleu
+                gr = Graine.TRANSPARENT;
+                break;
+            case "TR":  //Transparent Rouge
+                asRed = true;
+                gr = Graine.TRANSPARENT;
+                break;
+            default:
+                throw new AssertionError();
+        }
+
+        deplacerGraine(gr,numero_case ,asRed);
     }
 
 
