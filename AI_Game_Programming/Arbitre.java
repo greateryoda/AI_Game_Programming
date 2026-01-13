@@ -5,6 +5,7 @@ public class Arbitre {
     private static final int TIMEOUT_SECONDS = 15;
 
     public static void main(String[] args) throws Exception {
+        //Process A = Runtime.getRuntime().exec("C:\\Users\\mleve\\Desktop\\Cours\\2025\\2026\\AI_Game_Programming\\AI_Game_Programming\\external_player.exe JoueurA");
         Process A = Runtime.getRuntime().exec("java -cp C:\\Users\\mleve\\Desktop\\Cours\\2025\\2026\\AI_Game_Programming\\AI_Game_Programming\\bin principale JoueurA");
         //        Process A = new ProcessBuilder("./A").start();
         // Pour lancer un code java COMPILE : voir https://www.baeldung.com/java-process-api
@@ -23,34 +24,39 @@ public class Arbitre {
         String coup = "START";
         int nbCoups = 0;
         while (true) {
-            // Reception du coup de l'adversaire
-            courant.receive(coup);
-            // reponse avec TIMEOUT
-            coup = courant.response(TIMEOUT_SECONDS);
-            if (coup == null) {
-                disqualifier(courant, "timeout");
-                break;
-            }
-            nbCoups++;
-            if (nbCoups == 400) {
-                System.out.println("RESULT LIMIT");
-            }
-            // Validation du coup
+            try {
+                // Reception du coup de l'adversaire
+                courant.receive(coup);
+                // reponse avec TIMEOUT
+                coup = courant.response(TIMEOUT_SECONDS);
+                if (coup == null) {
+                    disqualifier(courant, "timeout");
+                    break;
+                }
+                nbCoups++;
+                if (nbCoups == 400) {
+                    System.out.println("RESULT LIMIT");
+                }
+                // Validation du coup
 //            if (!coupValide(reponse)) {
 //                disqualifier(courant, "coup invalide : " + reponse);
 //                break;
 //            }
 
-            System.out.println(courant.nom + " -> " + coup);
-            // Fin de partie
-            if (coup.contains("RESULT")) {
-                System.out.println(coup);
+                System.out.println(courant.nom + " -> " + coup);
+                // Fin de partie
+                if (coup.contains("RESULT")) {
+                    System.out.println(coup);
+                    break;
+                }
+                // Changement de joueur
+                Joueur tmp = courant;
+                courant = autre;
+                autre = tmp;
+            } catch (IOException e) {
+                disqualifier(courant, "erreur de communication: " + e.getMessage());
                 break;
             }
-            // Changement de joueur
-            Joueur tmp = courant;
-            courant = autre;
-            autre = tmp;
         }
         joueurA.destroy();
         joueurB.destroy();
@@ -82,6 +88,7 @@ public class Arbitre {
         BufferedWriter in;
         BufferedReader out;
         ExecutorService executor = Executors.newSingleThreadExecutor();
+        private boolean processAlive = true;
 
         Joueur(String nom, Process p) {
             this.nom = nom;
@@ -91,11 +98,24 @@ public class Arbitre {
         }
 
         void receive(String msg) throws IOException {
-            in.write(msg);
-            in.newLine();
-            in.flush();
+            if (!processAlive || !process.isAlive()) {
+                processAlive = false;
+                throw new IOException("Le processus " + nom + " n'est pas actif");
+            }
+            try {
+                in.write(msg);
+                in.newLine();
+                in.flush();
+            } catch (IOException e) {
+                processAlive = false;
+                throw e;
+            }
         }
         String response(int timeoutSeconds) throws IOException {
+            if (!processAlive || !process.isAlive()) {
+                processAlive = false;
+                throw new IOException("Le processus " + nom + " n'est pas actif");
+            }
             Future<String> future = executor.submit(() -> out.readLine());
             try {
                 return future.get(timeoutSeconds, TimeUnit.SECONDS);
@@ -103,12 +123,20 @@ public class Arbitre {
                 future.cancel(true);
                 return null;
             } catch (Exception e) {
+                processAlive = false;
                 return null;
             }
         }
 
         void destroy() {
+            processAlive = false;
             executor.shutdownNow();
+            try {
+                in.close();
+                out.close();
+            } catch (IOException e) {
+                // Ignore
+            }
             process.destroy();
         }
     }

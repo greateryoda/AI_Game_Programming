@@ -7,8 +7,8 @@ public class Game{
     MiniMaxAI ai1;
     public Game(){
         terrain = new ModeleAwale();
-        ai1 = new MiniMaxAI(Joueur.Joueur_1,5,false);
-        ai2 = new MiniMaxAI(Joueur.Joueur_2,5,true);
+        ai1 = new MiniMaxAI(Joueur.Joueur_1,6,true);
+        ai2 = new MiniMaxAI(Joueur.Joueur_2,6,true);
     }
 
     public void jouerUnTour(boolean botvsHuman){

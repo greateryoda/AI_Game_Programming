@@ -181,11 +181,9 @@ public class ModeleAwale{
 
     public boolean  deplacerGraine(Graine gr,int numero_case,Boolean asRed){
     if (!isCaseDuJoueur(numero_case, joueurActif)) {
-        System.out.println("Ce case ne t'appartient pas");
         return false;
     }
     if (!hasSeedsOfColor(numero_case, gr)) {
-        System.out.println("Il n'y a aucune graine dans ce cas");
         return false;
     }
        

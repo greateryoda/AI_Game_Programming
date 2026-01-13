@@ -36,7 +36,11 @@ public class MiniMaxAI {
         GameState state = new GameState(gameState);
         List<Move> possibleMoves = state.getPossibleMoves();
         if (possibleMoves.isEmpty()) return null;
-
+        int nbMoves = possibleMoves.size();
+        if(nbMoves >5){
+            profondeurMax = 5;
+        }
+        else profondeurMax = 7;
         int meilleurScore = Integer.MIN_VALUE;
         int meilleurProfondeur = Integer.MAX_VALUE;
         List<Move> bestMoves = new ArrayList<>();
