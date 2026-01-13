@@ -76,6 +76,12 @@ public class ModeleAwale{
         return count;
     }
 
+    public void viderPlateau(){
+        for(int i = 0; i< TAILLE_PLATEAU; i++){
+            plateau[i].clear();
+        }
+    }
+
     public int compterTousGraines(int numero_case) {
         return plateau[numero_case].size();
     }
@@ -99,6 +105,7 @@ public class ModeleAwale{
         switch(joueurActif){
             case Joueur.Joueur_1:
                 scoreJoueur2 += compterGrainesRestante();
+                viderPlateau();
                 if(getScore(Joueur.Joueur_1)==40 && getScore(Joueur.Joueur_2)==40){
                     jeuTermine = true;
                     draw = true;
@@ -110,6 +117,7 @@ public class ModeleAwale{
                 break;
             case Joueur.Joueur_2:
                 scoreJoueur1 += compterGrainesRestante();
+                viderPlateau();
                 if(getScore(Joueur.Joueur_1)==40 && getScore(Joueur.Joueur_2)==40){
                     jeuTermine = true;
                     draw = true;
@@ -263,6 +271,7 @@ public class ModeleAwale{
         }
         if(compterGrainesRestante()<10){
             jeuTermine = true;
+            
             gagnant = computeGagnant();
         }
     }
@@ -280,9 +289,14 @@ public class ModeleAwale{
     }
 
     public void deplacerGraineFromInput(String val){
-        String[] parts = val.split("\\s+");
-        int numero_case = Integer.parseInt(parts[0]) - 1;
-        String couleurPart = parts[1];
+        String val_trimmed = val.trim();
+        int i = 0;
+        while (i < val_trimmed.length() && Character.isDigit(val_trimmed.charAt(i))) {
+            i++;
+        }
+        
+        int numero_case = Integer.parseInt(val_trimmed.substring(0, i)) - 1;
+        String couleurPart = val_trimmed.substring(i).trim();
         Graine gr;
         Boolean asRed = null;
         switch (couleurPart) {

@@ -13,7 +13,7 @@ public class Move{
 
     public String getMove(){
         StringBuilder sb = new StringBuilder();
-        sb.append(numero_case + 1).append(" ");
+        sb.append(numero_case + 1);
         switch (graine){
             case ROUGE:
                 sb.append("R");

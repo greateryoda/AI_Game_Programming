@@ -143,10 +143,13 @@ public class GameState {
                 while (quantite_graine > 0) {
                     i = (i + 1) % 16;
                     if (joueurActif == Joueur.Joueur_1 && (i % 2 == 1)) {
-                        copie.plateau[i].add(Graine.BLEU);
+                        //CHANGED HERE
+                        //copie.plateau[i].add(Graine.BLEU);
+                        copie.plateau[i].add(Graine.TRANSPARENT);
                         quantite_graine--;
                     } else if (joueurActif == Joueur.Joueur_2 && (i % 2 == 0)) {
-                        copie.plateau[i].add(Graine.BLEU);
+                        //copie.plateau[i].add(Graine.BLEU);
+                        copie.plateau[i].add(Graine.TRANSPARENT);
                         quantite_graine--;
                     }
                 }
@@ -160,7 +163,8 @@ public class GameState {
                 quantite_graine--;
             }
         }
-        if(move.graine==Graine.BLEU || !move.asRed){
+        //CHANGED HERE removed !move.asRed condition
+        if(move.graine==Graine.BLEU){
             int quantite_graine = compterGraineCase(move.numero_case, Graine.BLEU);
             while (quantite_graine > 0) {
                 i = (i + 1) % 16;
@@ -173,16 +177,18 @@ public class GameState {
                 }
             }
         }
+        
         int number = move.numero_case;
         while(compterTousGraines(number)==2|| compterTousGraines(number)==3){
-            if(copie.plateau[move.numero_case].isEmpty()) break;
+            //CHANGED HERE move.numero_case TO number
+            if(copie.plateau[number].isEmpty()) break;
             if (copie.joueurActif == Joueur.Joueur_1) {
-                copie.scoreJ1 += copie.plateau[move.numero_case].size();
+                copie.scoreJ1 += copie.plateau[number].size();
             }
             else {
-                copie.scoreJ2 += copie.plateau[move.numero_case].size();
+                copie.scoreJ2 += copie.plateau[number].size();
             }
-            copie.plateau[move.numero_case].clear();
+            copie.plateau[number].clear();
             number = (number - 1 + 16) % 16;
         }
 
@@ -249,10 +255,57 @@ public class GameState {
 
         return 100*score_diff + gain_coups + 15*case_vulnerables;
     }
+    int countCapturePotential(Joueur player){
+        int count = 0;
+        for(int i = 0; i < 16; i++){
+            if((player == Joueur.Joueur_1 && i % 2 == 0) ||
+            (player == Joueur.Joueur_2 && i % 2 == 1)){
 
-    public int evaluate(boolean v2){
+                int prev = (i - 1 + 16) % 16;
+                int seeds = compterTousGraines(prev);
+                if(seeds == 2 || seeds == 3){
+                    count += seeds;
+                }
+            }
+        }
+        return count;
+    }
+
+    int new_evaluate(Joueur ia){
+    int scoreDiff = (ia == Joueur.Joueur_1)
+            ? scoreJ1 - scoreJ2
+            : scoreJ2 - scoreJ1;
+
+    int captureIA = countCapturePotential(ia);
+    int captureOpp = countCapturePotential(ia.opposite());
+
+    int oppMoves = countMovesForPlayer(ia.opposite());
+    int starvation = 0;
+    if (oppMoves == 0) starvation += 500; //250
+    else if (oppMoves == 1) starvation += 250; //120
+    else if (oppMoves == 2) starvation += 120; //60
+    else if (oppMoves < 5) starvation += 60;
+
+    int tempo = (joueurActif == ia) ? 30 : -30;
+
+    int vulnerable = compterCreuxVulnerables(ia);
+
+    int graines = compterGrainesRestante();
+    int endgame = (100 - graines) * 3;
+
+    return
+          120 * scoreDiff
+        + 35 * captureIA
+        - 45 * captureOpp
+        + starvation
+        + tempo
+        - 25 * vulnerable
+        + endgame;
+    }
+
+    public int evaluate(boolean v2, Joueur ia){
         if(v2){
-            return evaluate_v2();
+            return new_evaluate(ia);
         }
         return (joueurActif == Joueur.Joueur_1 ? scoreJ1 : scoreJ2);
     }

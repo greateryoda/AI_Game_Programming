@@ -34,50 +34,41 @@ public class MiniMaxAI {
 
     public Move choisirCoup(ModeleAwale gameState){
         GameState state = new GameState(gameState);
-        List<Move> possibleMove = state.getPossibleMoves();
-        List<Move> bestMoves = new ArrayList<Move>();
-        if(possibleMove.isEmpty()) return null;
+        List<Move> possibleMoves = state.getPossibleMoves();
+        if (possibleMoves.isEmpty()) return null;
 
-        int meilleurScore = (joueurIA == Joueur.Joueur_1) ? min : max;
-        int meilleurProfondeur = 0;
-        Move meilleurCoup = null;
-        bestMoves.clear();
+        int meilleurScore = Integer.MIN_VALUE;
+        int meilleurProfondeur = Integer.MAX_VALUE;
+        List<Move> bestMoves = new ArrayList<>();
 
-        for(Move move : possibleMove){
-            Eval res = (joueurIA == Joueur.Joueur_1)
-                    ? minValue(state.ApplyMove(move),profondeurMax-1,min,max)
-                    : maxValue(state.ApplyMove(move),profondeurMax-1,min,max);
-            if ((joueurIA == Joueur.Joueur_1 && res.value > meilleurScore) || (joueurIA == Joueur.Joueur_2 && res.value < meilleurScore)) {
+        for (Move move : possibleMoves) {
+            Eval res = minValue(
+                    state.ApplyMove(move),
+                    profondeurMax - 1,
+                    min,
+                    max
+            );
+
+            if (res.value > meilleurScore ||
+            (res.value == meilleurScore && res.depth < meilleurProfondeur)) {
+
                 meilleurScore = res.value;
                 meilleurProfondeur = res.depth;
                 bestMoves.clear();
                 bestMoves.add(move);
             }
-            else if(res.value == meilleurScore){
-                if(res.depth<meilleurProfondeur){
-                    meilleurProfondeur = res.depth;
-                    bestMoves.clear();
-                    bestMoves.add(move);
-                }
-                else if(res.depth == meilleurProfondeur){
-                    bestMoves.add(move);
-                }
+            else if (res.value == meilleurScore &&
+                    res.depth == meilleurProfondeur) {
+                bestMoves.add(move);
             }
         }
 
-        Random random = new Random();
-        int nombre_alea = random.nextInt(bestMoves.size());
-
-        meilleurCoup = bestMoves.get(nombre_alea);
-
-
-        return meilleurCoup;
-
+        return bestMoves.get(new Random().nextInt(bestMoves.size()));
     }
 
     public Eval minValue(GameState etat,int profondeur,int alpha, int beta){
         if(profondeur==0 || etat.estTerminal()){
-            return new Eval(etat.evaluate(useNewEval), profondeur);
+            return new Eval(etat.evaluate(useNewEval,joueurIA), profondeur);
         }
         int v = max;
         int bestDepth = 0;
@@ -85,7 +76,7 @@ public class MiniMaxAI {
         if (coups.isEmpty()){
             System.out.println("profondeur :"+profondeur);
             GameState starving = etat.starving();
-            return new Eval(starving.evaluate(useNewEval), profondeur);
+            return new Eval(starving.evaluate(useNewEval,joueurIA), profondeur);
         }
         for(Move coup : coups){
             Eval res = maxValue(etat.ApplyMove(coup),profondeur-1,alpha,beta);
@@ -103,14 +94,14 @@ public class MiniMaxAI {
 
     public Eval maxValue(GameState etat,int profondeur,int alpha,int beta){
         if(profondeur==0 || etat.estTerminal()){
-            return new Eval(etat.evaluate(useNewEval), profondeur);
+            return new Eval(etat.evaluate(useNewEval, joueurIA), profondeur);
         }
         int v = min;
         int bestDepth = 0;
         List<Move> coups = etat.getPossibleMoves();
         if (coups.isEmpty()){
             GameState starving = etat.starving();
-            return new Eval(starving.evaluate(useNewEval), profondeur);
+            return new Eval(starving.evaluate(useNewEval, joueurIA), profondeur);
         }
         for(Move coup : coups){
             Eval res = minValue(etat.ApplyMove(coup),profondeur-1,alpha,beta);
@@ -121,7 +112,7 @@ public class MiniMaxAI {
             if(v >=beta){
                 return new Eval(v, bestDepth);
             }
-            alpha = Math.min(alpha,v);
+            alpha = Math.max(alpha,v);
         }
         return new Eval(v, bestDepth);
     }

@@ -7,8 +7,8 @@ public class Game{
     MiniMaxAI ai1;
     public Game(){
         terrain = new ModeleAwale();
-        ai1 = new MiniMaxAI(Joueur.Joueur_1,3,false);
-        ai2 = new MiniMaxAI(Joueur.Joueur_2,4,true);
+        ai1 = new MiniMaxAI(Joueur.Joueur_1,5,false);
+        ai2 = new MiniMaxAI(Joueur.Joueur_2,5,true);
     }
 
     public void jouerUnTour(boolean botvsHuman){
@@ -60,12 +60,12 @@ public class Game{
             }
         }
         else{
-            if(terrain.getPossibleMoves().isEmpty()){
+            Move aiMove = ai1.choisirCoup(terrain);
+            if(aiMove == null){
                 terrain.starving();
                 isStarving = true;
             }
             else{
-                Move aiMove = ai1.choisirCoup(terrain);
                 terrain.deplacerGraine(aiMove.getGraine(),aiMove.getNumeroCase(),aiMove.getAsRed());
                 terrain.changeJoueur();
             }
@@ -85,12 +85,12 @@ public class Game{
             }
         }
         else{
-            if(terrain.getPossibleMoves().isEmpty()){
+            Move aiMove = ai2.choisirCoup(terrain);
+            if(aiMove == null){
                 terrain.starving();
                 isStarving = true;
             }
             else{
-                Move aiMove = ai2.choisirCoup(terrain);
                 terrain.deplacerGraine(aiMove.getGraine(),aiMove.getNumeroCase(),aiMove.getAsRed());
                 terrain.changeJoueur();
             }
